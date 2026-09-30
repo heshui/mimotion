@@ -99,7 +99,8 @@ function persist_execute_log {
   if test -n "$new_cron_hours"; then
     cron_hours=$(hours_except_now "$new_cron_hours")
   fi
-  "${sed_prefix[@]}" -E "s/(- cron: ')[0-9]+( [^[:space:]]+ \* \* \*')/\1$((RANDOM % 59)) ${cron_hours} * * *'/g" .github/workflows/run.yml
+  # 分钟固定随机在 30-58：GitHub 调度器在每小时开头高负载，前半小时的定时事件易被延迟或丢弃
+  "${sed_prefix[@]}" -E "s/(- cron: ')[0-9]+( [^[:space:]]+ \* \* \*')/\1$((30 + RANDOM % 29)) ${cron_hours} * * *'/g" .github/workflows/run.yml
   current_cron=$(< .github/workflows/run.yml grep cron|awk '{print substr($0, index($0,$3))}')
   {
     echo "next cron:"
